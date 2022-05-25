@@ -78,7 +78,8 @@ def get_dataset_dicts(input_image_path, watermark_mask_path):
                     "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "iscrowd": 0
+                    "iscrowd": 0,
+                    "category_id": 0
                 }
                 objs.append(obj)
             record['annotations'] += objs
