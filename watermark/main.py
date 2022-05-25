@@ -190,7 +190,7 @@ if __name__ == '__main__':
                                                               f'{data_path}/{d}/watermark_mask')
                                 )
         MetadataCatalog.get("watermarks_" + d).set(
-            thing_classes=['watermark', 'text'])
+            thing_classes=['watermark'])
     watermarks_metadata = MetadataCatalog.get("watermarks_train")
     watermarks_metadata_val = MetadataCatalog.get("watermarks_val")
 
