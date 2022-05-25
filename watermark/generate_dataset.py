@@ -3,10 +3,11 @@ import os.path as osp
 import random
 import shutil
 
-import cv2
 import numpy as np
 import torch
 from PIL import Image
+
+import cv2
 from torchvision import transforms
 from tqdm import tqdm
 

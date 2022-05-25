@@ -6,11 +6,13 @@ import sys
 import time
 from glob import glob
 
-import cv2
-import detectron2.utils.comm as comm
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from PIL import Image
+
+import cv2
+import detectron2.utils.comm as comm
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
@@ -22,7 +24,6 @@ from detectron2.evaluation import COCOEvaluator
 from detectron2.structures import BoxMode
 from detectron2.utils.logger import log_every_n_seconds, setup_logger
 from detectron2.utils.visualizer import ColorMode, Visualizer
-from PIL import Image
 from tqdm import tqdm
 
 setup_logger()
@@ -181,11 +182,11 @@ class MyTrainer(DefaultTrainer):
         return hooks
 
 if __name__ == '__main__':
-    data_path = 'data'
+    data_path = '../dataset'
     for d in ["train", "val"]:
         DatasetCatalog.register("watermarks_" + d,
-                                lambda d=d: get_dataset_dicts(f'{data_path}/{d}/input',
-                                                              f'{data_path}/{d}/mask_watermark')
+                                lambda d=d: get_dataset_dicts(f'{data_path}/{d}/watermark_input',
+                                                              f'{data_path}/{d}/watermark_mask')
                                 )
         MetadataCatalog.get("watermarks_" + d).set(
             thing_classes=['watermark', 'text'])
@@ -220,8 +221,8 @@ if __name__ == '__main__':
 
         # score_benchmark
         folder_name = 'test'
-        for i in tqdm(os.listdir(f'dataset/{folder_name}')):
-            img_path = os.path.join(f'dataset/{folder_name}', i)
+        for i in tqdm(os.listdir(f'../dataset/{folder_name}')):
+            img_path = os.path.join(f'../dataset/{folder_name}', i)
             if os.path.isfile(img_path):
                 im = cv2.imread(img_path)
                 outputs = predictor(im)
