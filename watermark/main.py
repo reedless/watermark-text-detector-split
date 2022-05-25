@@ -28,15 +28,6 @@ from tqdm import tqdm
 
 setup_logger()
 
-def image_files_from_folder(folder, upper=True):
-    extensions = ['png', 'jpg', 'jpeg']
-    vid_files = []
-    for ext in extensions:
-        vid_files += glob('%s/*.%s' % (folder, ext))
-        if upper:
-            vid_files += glob('%s/*.%s' % (folder, ext.upper()))
-    return vid_files
-
 def get_dataset_dicts(input_image_path, watermark_mask_path):
 
     input_image_files = sorted(os.listdir(input_image_path))
@@ -206,7 +197,7 @@ if __name__ == '__main__':
     cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.00025
     cfg.SOLVER.MAX_ITER = 10000
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.MODEL.DEVICE = "cuda"
 
     if sys.argv[1] == "train":
