@@ -5,11 +5,13 @@ import os.path as osp
 import sys
 import time
 
-import cv2
-import detectron2.utils.comm as comm
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from PIL import Image
+
+import cv2
+import detectron2.utils.comm as comm
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
@@ -21,7 +23,6 @@ from detectron2.evaluation import COCOEvaluator
 from detectron2.structures import BoxMode
 from detectron2.utils.logger import log_every_n_seconds, setup_logger
 from detectron2.utils.visualizer import ColorMode, Visualizer
-from PIL import Image
 from tqdm import tqdm
 
 setup_logger()
@@ -40,7 +41,7 @@ def get_dataset_dicts(input_image_path, watermark_mask_path):
         if os.path.isfile(watermark_mask_file):
             watermark_mask_img = Image.open(watermark_mask_file)
 
-            img_width, img_height = watermark_mask_img.size
+            img_height, img_width = watermark_mask_img.size
             record = {"file_name": input_image_file,
                     "height": img_height,
                     "width": img_width,
