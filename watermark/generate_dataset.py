@@ -3,11 +3,10 @@ import os.path as osp
 import random
 import shutil
 
+import cv2
 import numpy as np
 import torch
 from PIL import Image
-
-import cv2
 from torchvision import transforms
 from tqdm import tqdm
 
@@ -116,10 +115,12 @@ def main():
 
             indiv_photo_path = osp.join(raw_path, photo)
             img = Image.open(indiv_photo_path)
+            rgbimg = img.convert('RGB')
+            img = rgbimg
             # img = img.resize((256, 256))
 
-            # 5/7 of input images are hard negatives
-            if random.random() < (5/7):
+            # choose some of input images as hard negatives
+            if random.random() < (1/2):
                 img = np.array(img).astype(np.uint8)
                 img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
                 img = ((torch.from_numpy(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
@@ -131,7 +132,7 @@ def main():
                             cv2.cvtColor(np.array(img.permute(1, 2, 0) * 255), cv2.COLOR_BGR2RGB))
                 i += 1
 
-            else: # 2/7 of input images are positives
+            else: # choose some of input images as positives
                 img_original = transforms.ToTensor()(img)
                 watermarked_img = load_watermark(img_original, watermark_path, watermark_files, prob=1)
 
