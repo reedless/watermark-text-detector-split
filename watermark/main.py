@@ -1,15 +1,18 @@
 import datetime
+import json
 import logging
 import os
 import os.path as osp
 import sys
 import time
 
-import cv2
-import detectron2.utils.comm as comm
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from PIL import Image
+
+import cv2
+import detectron2.utils.comm as comm
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
@@ -21,7 +24,6 @@ from detectron2.evaluation import COCOEvaluator
 from detectron2.structures import BoxMode
 from detectron2.utils.logger import log_every_n_seconds, setup_logger
 from detectron2.utils.visualizer import ColorMode, Visualizer
-from PIL import Image
 from tqdm import tqdm
 
 setup_logger()
@@ -196,7 +198,7 @@ if __name__ == '__main__':
     cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = 0.00025
     cfg.SOLVER.MAX_ITER = 10000
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
     cfg.MODEL.DEVICE = "cuda"
 
     if sys.argv[1] == "train":
@@ -206,29 +208,43 @@ if __name__ == '__main__':
         trainer.train()
 
     elif sys.argv[1] == "test":
-        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
-        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+        # cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
+        cfg.MODEL.WEIGHTS = "watermark_detectron2_29112021_2.pth"
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
         predictor = DefaultPredictor(cfg)
 
         # score_benchmark
         folder_name = 'test'
-        for i in tqdm(os.listdir(f'../dataset/{folder_name}')):
-            img_path = os.path.join(f'../dataset/{folder_name}', i)
-            if os.path.isfile(img_path):
-                im = cv2.imread(img_path)
-                outputs = predictor(im)
-                v = Visualizer(im[:, :, ::-1],
-                            metadata=watermarks_metadata,
-                            scale=1,
-                            instance_mode=ColorMode.IMAGE_BW  # remove the colors of unsegmented pixels
-                            )
-                v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-                fig, ax = plt.subplots(1, 2, figsize=(14, 10))
-                ax[0].imshow(cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB))
-                ax[1].imshow(im[:, :, ::-1])
+        output_dict = {}
+        for folder in os.listdir(f'../dataset/{folder_name}'):
+            output_list = []
 
-                os.makedirs(f'output/{folder_name}/', exist_ok=True)
-                plt.savefig(f'./output/{folder_name}/{i}')
-                plt.close()
+            for i in tqdm(os.listdir(f'../dataset/{folder_name}/{folder}')):
+
+                img_path = os.path.join(f'../dataset/{folder_name}/{folder}', i)
+                if os.path.isfile(img_path):
+                    im = cv2.imread(img_path)
+                    outputs = predictor(im)
+                    output_list.append(outputs['instances'].scores.tolist())
+                    print(outputs['instances'].scores.tolist())
+
+                    # v = Visualizer(im[:, :, ::-1],
+                    #             metadata={'thing_classes': ['text', 'watermark']},
+                    #             scale=1,
+                    #             instance_mode=ColorMode.IMAGE_BW  # remove the colors of unsegmented pixels
+                    #             )
+                    # v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+                    # fig, ax = plt.subplots(1, 2, figsize=(14, 10))
+                    # ax[0].imshow(cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB))
+                    # ax[1].imshow(im[:, :, ::-1])
+
+                    # os.makedirs(f'benchmark/{folder_name}/{folder}', exist_ok=True)
+                    # plt.savefig(f'./benchmark/{folder_name}/{folder}/{i}')
+                    # plt.close()
+
+            output_dict[folder] = output_list
+
+        with open(f'benchmark/{folder_name}_output.json', 'w') as f:
+            json.dump(output_dict, f)
     else:
         print("Either 'Train' or 'Test' must be specified in the argument.")

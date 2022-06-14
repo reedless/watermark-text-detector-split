@@ -3,10 +3,11 @@ import os.path as osp
 import random
 import shutil
 
-import cv2
 import numpy as np
 import torch
 from PIL import Image
+
+import cv2
 from torchvision import transforms
 from tqdm import tqdm
 
@@ -117,7 +118,6 @@ def main():
             img = Image.open(indiv_photo_path)
             rgbimg = img.convert('RGB')
             img = rgbimg
-            # img = img.resize((256, 256))
 
             # choose some of input images as hard negatives
             if random.random() < (1/2):
